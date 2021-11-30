@@ -1,2 +1,2 @@
 # brainfuck rust
-a brainfuck interpreter in Rust
+OOP based brainfuck interpreter in Rust
