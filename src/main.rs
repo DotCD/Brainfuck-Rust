@@ -1,12 +1,13 @@
-use std::io::stdin;
-
 fn main() {
+    //Create new instance of "Bf" with instructions/program
     let mut bf = Bf::new(String::from("++++.[-]>++<.>.>,."));
     let debug = false;
     
     let mut i = 0;
+    //Loop through instructions until complete
     while i < bf.input.len() {
         i = tick(&mut bf, i);
+        //prints the strip every step if enabled
         if debug {
             bf.display();   
         }
@@ -14,6 +15,7 @@ fn main() {
 
 }
 
+///Takes instruction index and Bf instance. Parses and performs instruction then returns next index
 fn tick(bf: &mut Bf, mut i: usize) -> usize {
     match bf.input.chars().nth(i).unwrap() {
         '<' => {
@@ -28,7 +30,7 @@ fn tick(bf: &mut Bf, mut i: usize) -> usize {
         '-' => {
             bf.dec();
         },
-        '[' => {
+        '[' => { //if loop should be broken, break
             if bf.cur() == 0 {
                 loop {
                     i += 1;
@@ -38,7 +40,7 @@ fn tick(bf: &mut Bf, mut i: usize) -> usize {
                 }
             }
         },
-        ']' => {
+        ']' => { //if loop should continue, return to starting position
             if bf.cur() != 0 {
                 loop {
                     i -= 1;
@@ -54,19 +56,23 @@ fn tick(bf: &mut Bf, mut i: usize) -> usize {
         ',' => {
             let mut data = String::new();
             println!("Input: ");
-            stdin().read_line(&mut data).expect("expected input");
+            std::io::stdin().read_line(&mut data).expect("expected input");
             bf.strip.data[bf.strip.cursor] = data.trim().parse::<i32>().unwrap();
         },
         _ => return i+1,
     }
     return i+1;
 }
+
+///Data Strip Struct.
+///This is the what the brainfuck commands modify
 struct Strip {
     data: Vec<i32>,
     cursor: usize
 }
 
 impl Strip {
+    ///Creates new strip with Data[0] set to 0
     pub fn new() -> Strip {
         let mut s = Strip {
             data: Vec::new(),
@@ -78,6 +84,7 @@ impl Strip {
         return s;
     }
 
+    ///Moves cursor forward one
     fn fw(&mut self) {
         self.cursor += 1;
         if self.cursor >= self.data.len() {
@@ -85,39 +92,46 @@ impl Strip {
         }
     }
     
+    ///Moves cursor back one with floor of 0
     fn bk(&mut self) {
         if self.cursor > 0 {
             self.cursor -= 1;
         }
     }
     
+    ///Returns data at cursor
     fn cur(&self) -> i32 {
         return self.data[self.cursor];
     }
     
+    ///Increments cell at cursor by 1
     fn inc(&mut self) {
         self.data[self.cursor] += 1;
     }
     
+    ///Decrements cell at cursor by 1
     fn dec(&mut self) {
         self.data[self.cursor] -= 1;
     }
 }
 
+///Contains the data Strip and the input program
 struct Bf {
     strip: Strip,
     input: String
 }
 
 impl Bf {
+    ///Creates new Bf instance with passed input
     pub fn new(inst: String) -> Bf {
-        let mut b = Bf {
+        let b = Bf {
             strip: Strip::new(),
             input: inst
         };
         
         return b;
     }
+
     fn fw(&mut self) {
         self.strip.fw();
     }
@@ -138,6 +152,7 @@ impl Bf {
         self.strip.dec();
     }
     
+    ///Loops through data strip and prints the strip. Highlights data cell at cursor location
     fn display(&self) {
         for i in 0..self.strip.data.len() {
             if i == self.strip.cursor {
